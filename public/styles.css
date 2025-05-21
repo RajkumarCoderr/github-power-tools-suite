@@ -1,0 +1,103 @@
+
+/* GitHub Downloader & Analyzer styles */
+
+/* Checkbox cell */
+.gda-checkbox-cell {
+  transition: all 0.2s ease;
+}
+
+/* FAB button */
+.gda-fab:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+/* Panel animations */
+.gda-panel-header, 
+.gda-panel-content {
+  opacity: 1;
+  transition: opacity 0.3s ease;
+}
+
+.gda-panel[style*="translateX"] .gda-panel-header,
+.gda-panel[style*="translateX"] .gda-panel-content {
+  opacity: 0;
+}
+
+/* Sidebar styles */
+.gda-sidebar {
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.1);
+}
+
+.gda-nav-link {
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.gda-nav-link:hover {
+  background-color: #f6f8fa;
+  padding-left: 4px;
+}
+
+/* Stat value fade in */
+.gda-stat-value {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Size bar animation */
+.gda-size-bar {
+  width: 0;
+  color: white;
+  text-align: right;
+  padding-right: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  animation: expandWidth 1s ease forwards;
+}
+
+@keyframes expandWidth {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* Commits chart animation */
+.gda-commit-bar {
+  width: 100%;
+  transform: scaleY(0);
+  transform-origin: bottom;
+  animation: growUp 1s ease forwards;
+  animation-delay: calc(var(--index, 0) * 0.1s);
+}
+
+@keyframes growUp {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Language bar transitions */
+.gda-lang-segment {
+  transition: opacity 0.3s ease;
+}
+
+.gda-lang-bar:hover .gda-lang-segment:not(:hover) {
+  opacity: 0.8;
+}
