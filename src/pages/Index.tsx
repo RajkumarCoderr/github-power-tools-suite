@@ -3,11 +3,15 @@ import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { ApiKeyForm } from '@/components/ApiKeyForm';
 import { ExtensionInfo } from '@/components/ExtensionInfo';
 import { FeaturesList } from '@/components/FeaturesList';
+
+// Type guard to check if we're in a Chrome extension context
+const isChromeExtension = (): boolean => {
+  return typeof chrome !== 'undefined' && !!chrome.storage;
+}
 
 const Index = () => {
   const [apiKey, setApiKey] = useState<string>("");
@@ -15,21 +19,33 @@ const Index = () => {
   const { toast } = useToast();
 
   useEffect(() => {
+    // Check if we're in a Chrome extension context
+    if (!isChromeExtension()) return;
+    
     // Check if API key exists in storage
-    chrome.storage?.local?.get(['github_api_key'], (result) => {
+    chrome.storage.local.get(['github_api_key'], (result) => {
       if (result.github_api_key) {
         setApiKey(result.github_api_key);
       }
     });
 
     // Check if extension is enabled
-    chrome.storage?.local?.get(['extension_enabled'], (result) => {
+    chrome.storage.local.get(['extension_enabled'], (result) => {
       setIsEnabled(result.extension_enabled !== false);
     });
   }, []);
 
   const saveApiKey = (key: string) => {
-    chrome.storage?.local?.set({ github_api_key: key }, () => {
+    if (!isChromeExtension()) {
+      toast({
+        title: "Development Mode",
+        description: "API key functionality only works in the extension environment"
+      });
+      setApiKey(key);
+      return;
+    }
+    
+    chrome.storage.local.set({ github_api_key: key }, () => {
       setApiKey(key);
       toast({
         title: "API Key Saved",
@@ -39,8 +55,17 @@ const Index = () => {
   };
 
   const toggleExtension = () => {
+    if (!isChromeExtension()) {
+      toast({
+        title: "Development Mode",
+        description: "Extension toggling only works in the extension environment"
+      });
+      setIsEnabled(!isEnabled);
+      return;
+    }
+    
     const newState = !isEnabled;
-    chrome.storage?.local?.set({ extension_enabled: newState }, () => {
+    chrome.storage.local.set({ extension_enabled: newState }, () => {
       setIsEnabled(newState);
       toast({
         title: newState ? "Extension Enabled" : "Extension Disabled",
@@ -50,9 +75,6 @@ const Index = () => {
       });
     });
   };
-
-  // For non-extension environments (development)
-  const isExtension = typeof chrome !== 'undefined' && chrome.storage;
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -81,7 +103,7 @@ const Index = () => {
                 <ApiKeyForm 
                   apiKey={apiKey} 
                   onSave={saveApiKey} 
-                  disabled={!isExtension} 
+                  disabled={!isChromeExtension()} 
                 />
                 <div className="space-y-2">
                   <label className="font-medium">Extension Status</label>
@@ -90,7 +112,7 @@ const Index = () => {
                     <Button 
                       variant={isEnabled ? "default" : "outline"}
                       onClick={toggleExtension}
-                      disabled={!isExtension}
+                      disabled={!isChromeExtension()}
                     >
                       {isEnabled ? "Enabled" : "Disabled"}
                     </Button>
@@ -98,7 +120,7 @@ const Index = () => {
                 </div>
               </CardContent>
               <CardFooter className="border-t pt-4 text-sm text-muted-foreground">
-                {isExtension ? 
+                {isChromeExtension() ? 
                   "Settings will be applied when you visit GitHub" : 
                   "These controls only work in the extension environment"}
               </CardFooter>
